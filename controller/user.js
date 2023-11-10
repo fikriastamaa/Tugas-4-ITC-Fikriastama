@@ -1,21 +1,53 @@
 const Division = require('../model/Division');
 const User = require('../model/User');
 
-const getAllUser = (req, res, next)=>{
+const getAllUser = async (req, res, next)=>{
   try {
     //TUGAS NOMOR 1
+    const users = await User.findAll({
+      attributes: ["id", "fullName", "angkatan", "divisionId"], include: {
+        model: Division,
+        attributes: ["name"]
+      }
+    });
+    res.status(200).json({
+      status: "Success",
+      message: "Succesfully fetch all user data",
+      users: users,
+    });
   } catch (error) {
     console.log(error.message);
   }
 }
 
-const getUserById = (req,res,next)=>{
+const getUserById = async (req,res,next)=>{
   try {
     //TUGAS NOMOR 2 cari user berdasarkan userId
     const {userId} = req.params
+    const users = await User.findOne({
+      where: { Id: userId },
+      attributes: ["id", "fullName", "angkatan", "divisionId"], include: {
+        model: Division,
+        attributes: ["name"]
+      }
+    });
+    //jika id tidak ditemukan dalam tabel users
+    if (users == null) {
+      res.status(404).json({
+        status: "Not Found",
+        message: `User with id ${userId} is not existed`,
+      });
+    } else {
+      //jika id ada di tabel users
+      res.status(200).json({
+        status: "Success",
+        message: "Succesfully fetch user data",
+        user: users,
+      });
+    }
   } catch (error) {
     console.log(error.message);
-  }
+  };
 }
 
 const postUser = async(req,res,next)=>{
@@ -23,6 +55,7 @@ const postUser = async(req,res,next)=>{
     const {
       fullName, nim, angkatan, email, password, division
     } = req.body
+    
 
     //cari divisi id
     //pakai await untuk menghindari penulisan then
